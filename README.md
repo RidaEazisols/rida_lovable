@@ -1,5 +1,42 @@
 # Welcome to your Lovable project
 
+## Overview
+This document describes the main issue discovered in the Lead Capture App and the fix that was applied to ensure reliable functionality.
+
+### Critical Fix Implemented  
+
+#### 1. Lead Data Not Persisting in Database  
+**File**: `src/components/LeadCaptureForm.tsx`  
+**Severity**: Critical  
+**Status**: Fixed  
+
+**Problem**  
+The lead capture form was able to send confirmation emails through the `send-confirmation` Supabase Edge Function, but **the submitted lead data was not being saved** in the Supabase database.  
+
+**Root Cause**  
+The initial implementation focused only on sending emails. The **database insertion logic** was missing, which caused all lead submissions to be lost.  
+
+**Fix**  
+Added explicit database insertion logic using the Supabase client:  
+
+```ts
+const { data, error } = await supabase
+  .from("leads")
+  .insert([
+    {
+      name: formData.name,
+      email: formData.email,
+      industry: formData.industry,
+      submitted_at: new Date().toISOString(),
+    },
+  ])
+  .select();
+
+if (error) {
+  console.error("Database insert failed:", error);
+}
+
+
 ## Project info
 
 **URL**: https://lovable.dev/projects/94b52f1d-10a5-4e88-9a9c-5c12cf45d83a
